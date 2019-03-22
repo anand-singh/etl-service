@@ -14,7 +14,7 @@ ETL Service (REST API performing extract, transform and load operations) using S
 * To run this sbt project, you need JDK 8 or later
 * Execute `sbt clean compile` to build the product
 * Execute `sbt run` to start the etl-service
-* Finaly etl-service should be now accessible at localhost:8080
+* Finally etl-service should be now accessible at localhost:8080
 
 ### References
 * [Scala](https://www.scala-lang.org/) - Scala combines object-oriented and functional programming in one concise, high-level language.
