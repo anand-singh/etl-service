@@ -1,30 +1,31 @@
 package io.github.etl
 
 import cats.effect.IO
+import io.github.etl.service.AggregationService
 import org.http4s._
 import org.http4s.implicits._
 import org.specs2.matcher.MatchResult
 
 class AggregationServiceSpec extends org.specs2.mutable.Specification {
 
-  "HelloWorld" >> {
+  "AggregationService" >> {
     "return 200" >> {
       uriReturns200()
     }
-    "return hello world" >> {
-      uriReturnsHelloWorld()
+    "return word count" >> {
+      uriReturnsWordCount()
     }
   }
 
-  private[this] val retHelloWorld: Response[IO] = {
-    val getHW = Request[IO](Method.GET, Uri.uri("/hello/world"))
-    val helloWorld = WordCountService.impl[IO]
-    Routes.aggregationRoutes(helloWorld).orNotFound(getHW).unsafeRunSync()
+  private[this] val retAggregation: Response[IO] = {
+    val getWordCount = Request[IO](Method.GET, Uri.uri("etl/aggregate/wordcount"))
+    val aggregationServiceAlg = AggregationService.impl[IO]
+    Routes.aggregationRoutes(aggregationServiceAlg).orNotFound(getWordCount).unsafeRunSync()
   }
 
   private[this] def uriReturns200(): MatchResult[Status] =
-    retHelloWorld.status must beEqualTo(Status.Ok)
+    retAggregation.status must beEqualTo(Status.Ok)
 
-  private[this] def uriReturnsHelloWorld(): MatchResult[String] =
-    retHelloWorld.as[String].unsafeRunSync() must beEqualTo("{\"message\":\"Hello, world\"}")
+  private[this] def uriReturnsWordCount(): MatchResult[String] =
+    retAggregation.as[String].unsafeRunSync() must contain("count")
 }
