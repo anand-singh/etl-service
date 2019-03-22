@@ -8,12 +8,10 @@ import org.http4s.EntityEncoder
 import org.http4s.circe.jsonEncoderOf
 
 /**
-  * TODO: Update with an appropriate comment
-  *
-  * @author Anand Singh (anand.singh@idemia.com)
-  * @since 21-03-2019
+  * Each response will have a header of JSON Type ResponseHeader
+  * as described in fields below and will be named responseHeader
   */
-case class ResponseHeader
+final case class ResponseHeader
 (
   requestId: String,
   responseId: String,

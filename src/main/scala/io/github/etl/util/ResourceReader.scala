@@ -46,7 +46,7 @@ object ResourceReader {
   }
 
   def lines: Either[EtlServiceException, List[String]] = {
-    load.map(value => value.filter(line => line.trim.isEmpty))
+    load.map(value => value.filter(line => !line.trim.isEmpty))
   }
 
 }

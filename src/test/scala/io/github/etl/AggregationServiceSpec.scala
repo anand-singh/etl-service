@@ -5,7 +5,7 @@ import org.http4s._
 import org.http4s.implicits._
 import org.specs2.matcher.MatchResult
 
-class WordCountServiceSpec extends org.specs2.mutable.Specification {
+class AggregationServiceSpec extends org.specs2.mutable.Specification {
 
   "HelloWorld" >> {
     "return 200" >> {
@@ -19,7 +19,7 @@ class WordCountServiceSpec extends org.specs2.mutable.Specification {
   private[this] val retHelloWorld: Response[IO] = {
     val getHW = Request[IO](Method.GET, Uri.uri("/hello/world"))
     val helloWorld = WordCountService.impl[IO]
-    Routes.wordCountRoutes(helloWorld).orNotFound(getHW).unsafeRunSync()
+    Routes.aggregationRoutes(helloWorld).orNotFound(getHW).unsafeRunSync()
   }
 
   private[this] def uriReturns200(): MatchResult[Status] =

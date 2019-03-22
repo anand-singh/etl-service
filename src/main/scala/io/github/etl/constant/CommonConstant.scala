@@ -8,5 +8,6 @@ object CommonConstant {
   val SUCCESS = "SUCCESS"
 
   val RESOURCE_ERROR = "Resource reading error!"
+  val SYNTAX_ERROR = "Pattern syntax error!"
 
 }
