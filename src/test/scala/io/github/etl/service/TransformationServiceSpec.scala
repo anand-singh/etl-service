@@ -13,7 +13,7 @@ class TransformationServiceSpec extends Specification with TestHelper {
       testCapsOperation()
     }
     "caps operation returns error" >> {
-      testCpasOperationWithException()
+      testCapsOperationWithException()
     }
     "replace operation returns replaced result" >> {
       testReplaceOperation()
@@ -59,7 +59,7 @@ class TransformationServiceSpec extends Specification with TestHelper {
     override def replace(request: TransformationService.ReplaceRequest): IO[TransformationService.TransformationResult] = buildResult(request.requestId)
   }
 
-  private[this] def testCpasOperationWithException(): MatchResult[Boolean] = {
+  private[this] def testCapsOperationWithException(): MatchResult[Boolean] = {
     val transformationResult = serviceWithException.caps(TransformationService.CapsRequest("123")).unsafeRunSync()
     transformationResult.header.requestId must beEqualTo("123")
     transformationResult.header.statusMessage must beEqualTo("Internal Server Error")

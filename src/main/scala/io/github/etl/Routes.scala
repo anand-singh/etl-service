@@ -47,11 +47,13 @@ object Routes {
       case req@POST -> Root / "etl" / "transform" / "replace" =>
         implicit val decoder: EntityDecoder[F, ReplaceRequestData] = jsonOf[F, ReplaceRequestData]
         val requestId = extractRequestId(req.headers)
-        for {
-          reqData <- req.as[ReplaceRequestData]
-          result <- TS.replace(ReplaceRequest(requestId, reqData.from, reqData.to))
-          resp <- Ok(result)
-        } yield resp
+        req.as[ReplaceRequestData].attempt.flatMap {
+          case Right(value) => for {
+            result <- TS.replace(ReplaceRequest(requestId, value.from, value.to))
+            resp <- Ok(result)
+          } yield resp
+          case Left(th) => BadRequest()
+        }
     }
   }
 
