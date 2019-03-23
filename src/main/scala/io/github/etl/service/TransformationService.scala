@@ -16,8 +16,6 @@ import io.github.etl.constant.CommonConstant._
 
 /**
   * TransformationService - Supports caps & replace operations
-  *
-  * @author Anand Singh
   */
 trait TransformationService[F[_]] {
 

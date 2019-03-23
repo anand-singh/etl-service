@@ -10,6 +10,9 @@ import io.github.etl.util.{CommonUtility, LoggerUtility, ResourceReader}
 import org.http4s.EntityEncoder
 import org.http4s.circe._
 
+/**
+  * AggregationService - Supports word count & frequency operations
+  */
 trait AggregationService[F[_]] {
 
   def wordCount(count: AggregationService.Count): F[AggregationService.AggregationResult]
