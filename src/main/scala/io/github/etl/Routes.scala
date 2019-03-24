@@ -4,10 +4,14 @@ import java.util.UUID
 
 import cats.effect.Sync
 import cats.implicits._
+import io.circe.Json
 import io.circe.generic.auto._
-import io.github.etl.domain.ReplaceRequestData
+import io.github.etl.constant.StatusCode
+import io.github.etl.domain.{ReplaceRequestData, SequenceRequestData}
+import io.github.etl.service.SequenceService.SequenceRequest
 import io.github.etl.service.TransformationService.ReplaceRequest
-import io.github.etl.service.{AggregationService, TransformationService}
+import io.github.etl.service.{AggregationService, SequenceService, TransformationService}
+import io.github.etl.util.CommonUtility._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.util.CaseInsensitiveString
@@ -52,9 +56,39 @@ object Routes {
             result <- TS.replace(ReplaceRequest(requestId, value.from, value.to))
             resp <- Ok(result)
           } yield resp
-          case Left(th) => BadRequest()
+          case Left(th) => BadRequest(th.getMessage)
         }
     }
+  }
+
+  def sequenceRoutes[F[_] : Sync](SS: SequenceService[F]): HttpRoutes[F] = {
+    val dsl = new Http4sDsl[F] {}
+    import dsl._
+    HttpRoutes.of[F] {
+      case req@POST -> Root / "etl" / "sequence" =>
+        implicit val decoder: EntityDecoder[F, SequenceRequestData] = jsonOf[F, SequenceRequestData]
+        val requestId = extractRequestId(req.headers)
+        req.as[SequenceRequestData].attempt.flatMap {
+          case Right(value) if !validateSequence(value) =>
+            BadRequest("can not sequence non logical operations.")
+          case Right(value) =>
+            for {
+              vResult <- SS.validateSequence(SequenceRequest(requestId, value))
+              sResult <- if (vResult.header.statusCode == StatusCode.CODE_2000) {
+                SS.executeSequence(SequenceRequest(requestId, value))
+              } else {
+                vResult.pure[F]
+              }
+              resp <- Ok(sResult)
+            } yield resp
+          case Left(th) => BadRequest(th.getMessage)
+        }
+    }
+  }
+
+  private def processSequenceData(sequence: SequenceRequestData): Json = {
+
+    Json.obj()
   }
 
   private def extractRequestId(headers: Headers): String = {
