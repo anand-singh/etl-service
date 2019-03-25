@@ -44,6 +44,7 @@ object SequenceService extends LoggerUtility {
   def impl[F[_] : Applicative](TS: TransformationService[F], AS: AggregationService[F]): SequenceService[F] = new SequenceService[F] {
 
     override def validateSequence(request: SequenceRequest): F[SequenceResult] = {
+      info(s"Received sequence request for validation: $request")
       val result = if (validateSequenceOperations(request.sequence.etl)) {
         SequenceResult(buildResponseHeader(request.requestId), Json.obj())
       } else {
@@ -53,6 +54,7 @@ object SequenceService extends LoggerUtility {
     }
 
     def executeSequence(request: SequenceRequest): F[SequenceResult] = {
+      info(s"Received sequence request: $request")
       TS.caps(TransformationService.CapsRequest(request.requestId))
       val result = ResourceReader.lines match {
         case Right(value) =>
@@ -75,7 +77,7 @@ object SequenceService extends LoggerUtility {
   }
 
   private def handleError(requestId: String, th: EtlServiceException): SequenceResult = {
-    error(th.getMessage, th)
+    error(s"Error occurred: ${th.getMessage}", th)
     val header = buildResponseHeader(requestId, th)
     SequenceResult(header, Json.obj())
   }

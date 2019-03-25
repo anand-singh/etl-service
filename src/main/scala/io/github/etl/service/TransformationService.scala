@@ -5,14 +5,14 @@ import java.util.regex.PatternSyntaxException
 import cats.Applicative
 import cats.implicits._
 import io.circe.{Encoder, Json}
+import io.github.etl.constant.CommonConstant._
+import io.github.etl.constant.StatusCode._
 import io.github.etl.domain.ResponseHeader
 import io.github.etl.exception.EtlServiceException
 import io.github.etl.util.CommonUtility._
 import io.github.etl.util.{LoggerUtility, ResourceReader}
 import org.http4s.EntityEncoder
 import org.http4s.circe.jsonEncoderOf
-import io.github.etl.constant.StatusCode._
-import io.github.etl.constant.CommonConstant._
 
 /**
   * TransformationService - Supports caps & replace operations
@@ -47,6 +47,7 @@ object TransformationService extends LoggerUtility {
 
   def impl[F[_] : Applicative]: TransformationService[F] = new TransformationService[F] {
     def caps(request: TransformationService.CapsRequest): F[TransformationService.TransformationResult] = {
+      info(s"Received caps request: $request")
       val result = ResourceReader.lines match {
         case Right(value) =>
           val header = buildResponseHeader(request.requestId)
@@ -57,6 +58,7 @@ object TransformationService extends LoggerUtility {
     }
 
     def replace(request: TransformationService.ReplaceRequest): F[TransformationService.TransformationResult] = {
+      info(s"Received replace request: $request")
       val replacedData = for {
         lines <- ResourceReader.lines.right
         result <- doReplace(lines, request).right
@@ -76,7 +78,7 @@ object TransformationService extends LoggerUtility {
   }
 
   private def handleError(requestId: String, th: EtlServiceException): TransformationResult = {
-    error(th.getMessage, th)
+    error(s"Error occurred: ${th.getMessage}", th)
     val header = buildResponseHeader(requestId, th)
     TransformationResult(header, List.empty)
   }
