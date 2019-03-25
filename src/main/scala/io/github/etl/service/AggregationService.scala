@@ -1,0 +1,74 @@
+package io.github.etl.service
+
+import cats.Applicative
+import cats.implicits._
+import io.circe.{Encoder, Json}
+import io.github.etl.domain.ResponseHeader
+import io.github.etl.exception.EtlServiceException
+import io.github.etl.util.CommonUtility.buildResponseHeader
+import io.github.etl.util.{CommonUtility, LoggerUtility, ResourceReader}
+import org.http4s.EntityEncoder
+import org.http4s.circe._
+
+/**
+  * AggregationService - Supports word count & frequency operations
+  */
+trait AggregationService[F[_]] {
+
+  def wordCount(count: AggregationService.Count): F[AggregationService.AggregationResult]
+
+  def wordFrequency(frequency: AggregationService.Frequency): F[AggregationService.AggregationResult]
+
+}
+
+object AggregationService extends LoggerUtility {
+
+  implicit def apply[F[_]](implicit ev: AggregationService[F]): AggregationService[F] = ev
+
+  final case class Count(requestId: String) extends AnyVal
+
+  final case class Frequency(requestId: String) extends AnyVal
+
+  final case class AggregationResult(header: ResponseHeader, result: Map[String, Int])
+
+  object AggregationResult {
+    implicit val wordCountEncoder: Encoder[AggregationResult] = (a: AggregationResult) => Json.obj(
+      ("header", a.header.toJson),
+      ("result", Json.fromValues(a.result.map { case (key, value) => Json.obj((key, Json.fromInt(value))) }))
+    )
+
+    implicit def wordCountEntityEncoder[F[_] : Applicative]: EntityEncoder[F, AggregationResult] =
+      jsonEncoderOf[F, AggregationResult]
+  }
+
+  def impl[F[_] : Applicative]: AggregationService[F] = new AggregationService[F] {
+    def wordCount(count: AggregationService.Count): F[AggregationService.AggregationResult] = {
+      info(s"Received word count request: $count")
+      val countResult = (value: List[String]) => Map("count" -> value.size)
+      processAggregationResult(count.requestId, countResult).pure[F]
+    }
+
+    def wordFrequency(frequency: AggregationService.Frequency): F[AggregationService.AggregationResult] = {
+      info(s"Received word frequency request: $frequency")
+      val frequencyResult = (value: List[String]) => value.groupBy((word: String) => word).mapValues(_.length)
+      processAggregationResult(frequency.requestId, frequencyResult).pure[F]
+    }
+
+  }
+
+  private[this] def processAggregationResult(reqId: String, f: List[String] => Map[String, Int]): AggregationResult = {
+    ResourceReader.words match {
+      case Right(value) =>
+        val header = CommonUtility.buildResponseHeader(reqId)
+        AggregationResult(header, f(value))
+      case Left(th) => handleError(reqId, th)
+    }
+  }
+
+  private[this] def handleError(requestId: String, th: EtlServiceException): AggregationResult = {
+    error(s"Error occurred: ${th.getMessage}", th)
+    val header = buildResponseHeader(requestId, th)
+    AggregationResult(header, Map.empty)
+  }
+
+}

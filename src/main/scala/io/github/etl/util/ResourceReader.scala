@@ -29,7 +29,7 @@ object ResourceReader {
     try {
       Right(using(Source.fromResource(path))(_.getLines().toList))
     } catch {
-      case NonFatal(ex) => Left(EtlServiceException(CODE_4000, RESOURCE_ERROR, ex))
+      case NonFatal(ex) => Left(EtlServiceException(CODE_3000, RESOURCE_ERROR, ex))
     }
   }
 
@@ -46,7 +46,7 @@ object ResourceReader {
   }
 
   def lines: Either[EtlServiceException, List[String]] = {
-    load.map(value => value.filter(line => line.trim.isEmpty))
+    load.map(value => value.filter(line => !line.trim.isEmpty))
   }
 
 }

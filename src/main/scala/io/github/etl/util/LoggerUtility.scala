@@ -1,6 +1,6 @@
 package io.github.etl.util
 
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 
 /**
   * Logger helper
@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory
   */
 trait LoggerUtility {
 
-  val logger = LoggerFactory.getLogger(this.getClass)
+  val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   protected def debug(message: String): Unit = logger.debug(message)
 
