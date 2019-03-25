@@ -29,17 +29,12 @@ object AggregationService extends LoggerUtility {
 
   final case class Frequency(requestId: String) extends AnyVal
 
-  /**
-    * More Generally You will want to decouple your edge representations from
-    * your internal data structures, however this shows how you can
-    * create encoders for your data.
-    **/
   final case class AggregationResult(header: ResponseHeader, result: Map[String, Int])
 
   object AggregationResult {
     implicit val wordCountEncoder: Encoder[AggregationResult] = (a: AggregationResult) => Json.obj(
       ("header", a.header.toJson),
-      ("result", Json.fromString(a.result.mkString(",")))
+      ("result", Json.fromValues(a.result.map { case (key, value) => Json.obj((key, Json.fromInt(value))) }))
     )
 
     implicit def wordCountEntityEncoder[F[_] : Applicative]: EntityEncoder[F, AggregationResult] =
@@ -48,29 +43,30 @@ object AggregationService extends LoggerUtility {
 
   def impl[F[_] : Applicative]: AggregationService[F] = new AggregationService[F] {
     def wordCount(count: AggregationService.Count): F[AggregationService.AggregationResult] = {
-      val wc = ResourceReader.words match {
-        case Right(value) =>
-          val header = CommonUtility.buildResponseHeader(count.requestId)
-          AggregationResult(header, Map("count" -> value.size))
-        case Left(th) => handleError(count.requestId, th)
-      }
-      wc.pure[F]
+      info(s"Received word count request: $count")
+      val countResult = (value: List[String]) => Map("count" -> value.size)
+      processAggregationResult(count.requestId, countResult).pure[F]
     }
 
     def wordFrequency(frequency: AggregationService.Frequency): F[AggregationService.AggregationResult] = {
-      val wc = ResourceReader.words match {
-        case Right(value) =>
-          val header = CommonUtility.buildResponseHeader(frequency.requestId)
-          AggregationResult(header, value.groupBy((word: String) => word).mapValues(_.length))
-        case Left(th) => handleError(frequency.requestId, th)
-      }
-      wc.pure[F]
+      info(s"Received word frequency request: $frequency")
+      val frequencyResult = (value: List[String]) => value.groupBy((word: String) => word).mapValues(_.length)
+      processAggregationResult(frequency.requestId, frequencyResult).pure[F]
     }
 
   }
 
-  private def handleError(requestId: String, th: EtlServiceException): AggregationResult = {
-    error(th.getMessage, th)
+  private[this] def processAggregationResult(reqId: String, f: List[String] => Map[String, Int]): AggregationResult = {
+    ResourceReader.words match {
+      case Right(value) =>
+        val header = CommonUtility.buildResponseHeader(reqId)
+        AggregationResult(header, f(value))
+      case Left(th) => handleError(reqId, th)
+    }
+  }
+
+  private[this] def handleError(requestId: String, th: EtlServiceException): AggregationResult = {
+    error(s"Error occurred: ${th.getMessage}", th)
     val header = buildResponseHeader(requestId, th)
     AggregationResult(header, Map.empty)
   }

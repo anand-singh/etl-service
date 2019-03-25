@@ -38,7 +38,7 @@ object TransformationService extends LoggerUtility {
   object TransformationResult {
     implicit val transResultEncoder: Encoder[TransformationResult] = (a: TransformationResult) => Json.obj(
       ("header", a.header.toJson),
-      ("result", Json.fromString(a.result.mkString(" ")))
+      ("result", Json.fromValues(a.result.map(Json.fromString)))
     )
 
     implicit def transResultEntityEncoder[F[_] : Applicative]: EntityEncoder[F, TransformationResult] =
@@ -66,7 +66,7 @@ object TransformationService extends LoggerUtility {
           val header = buildResponseHeader(request.requestId)
           TransformationResult(header, value)
         case Left(th: PatternSyntaxException) =>
-          val exp = EtlServiceException(CODE_3000, SYNTAX_ERROR, th)
+          val exp = EtlServiceException(CODE_4002, SYNTAX_ERROR, th)
           handleError(request.requestId, exp)
         case Left(th: EtlServiceException) => handleError(request.requestId, th)
         case Left(_: Exception) => handleError(request.requestId, EtlServiceException())

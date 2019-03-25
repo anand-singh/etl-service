@@ -11,6 +11,8 @@ object CommonConstant {
 
   val RESOURCE_ERROR = "Resource reading error!"
   val SYNTAX_ERROR = "Pattern syntax error!"
+  val JSON_ERROR = "Malformed Json error!"
+  val OPERATION_ERROR = "Can not sequence non logical operations."
 
   object Operations extends Enumeration {
 

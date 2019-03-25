@@ -65,7 +65,7 @@ class TransformationRouteSpec extends Specification with TestHelper {
   }
 
   private[this] def replaceUriReturns400(): MatchResult[Boolean] =
-    check(replaceBadRequestResponse, Status.BadRequest, None) must beTrue
+    check(replaceBadRequestResponse, Status.BadRequest, Some("Malformed Json error!")) must beTrue
 
   private[this] val replaceErrorResponse: IO[Response[IO]] = {
     val replaceNotFoundRequest = Request[IO](Method.POST, Uri.uri("etl/transform/replace-xyz"))
