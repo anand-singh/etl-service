@@ -1,7 +1,7 @@
 # ETL Service
 ETL Service (REST API performing extract, transform and load operations) using Scala & http4s
 
-Normaly, I uses Play Framework & AkkaHTTP to build REST API with the Scala & Java. But in this code example I used http4s because I needs to complete this design using FP fundamentals. And http4s made it quite easy for me as it supports Typeful and functional design. Composability is quite easy task using this tool because of Cats library ecosystem.
+Normally, I uses Play Framework & AkkaHTTP to build REST API with the Scala & Java. But in this code example I used http4s because I needs to complete this design using FP fundamentals. And http4s made it quite easy for me as it supports Typeful and functional design. Composability is quite easy task using this tool because of Cats library ecosystem.
 
 ##### This is a classic ETL Service, backed by Scala & http4s. It demonstrates:
 * Extensible and maintainable design
@@ -12,11 +12,11 @@ Normaly, I uses Play Framework & AkkaHTTP to build REST API with the Scala & Jav
 
 ### Domain Objects
 * EtlSequence - This is main object of this application and it contains whole details about sequence operations which we can perform with the tool we have created. More specific will be composing operations one after the other.
-* Operation - Contanis info about operations like wordcount, wordfrequency, caps and replace with the body details.
+* Operation - Contains info about operations like word count, word frequency, caps and replace with the body details.
 
 *Transformation and Aggregation Operation:* - Below objects are used to transform http request into objects and send it to the service layer for further processing. 
 * CountRequest
-* FrecuencyRequest
+* FrequencyRequest
 * AggregationResult
 * CapsRequest
 * ReplaceRequest
@@ -33,10 +33,10 @@ Normaly, I uses Play Framework & AkkaHTTP to build REST API with the Scala & Jav
   - SequenceServiceSpec - Unit tests of sequence validation and operations on both aggregation and transformation
 
 ### Logging & Monitoring - Request/Response
-* All requests are tracked by a http header called `Request-Id`. This implementation manlly done for the tracking and monitoring purpose. Also a logger enabled for each request and response to track the details.
-* System generates an unique `responseId` to track the incomming `requestId` and both are returns with the response header.
+* All requests are tracked by a http header called `Request-Id`. This implementation mainly done for the tracking and monitoring purpose. Also a logger enabled for each request and response to track the details.
+* System generates an unique `responseId` to track the incoming `requestId` and both are returns with the response header.
 * Info and Error logging has been implemented as and when it’s needed.
-* A well decriptive response header available for each request which contains information about the process state.
+* A well descriptive response header available for each request which contains information about the process state.
 ```
 {
     "header": {
