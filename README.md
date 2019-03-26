@@ -9,8 +9,17 @@ ETL Service (REST API performing extract, transform and load operations) using S
 * Good Error handling implementation.
 
 ### Domain Objects
-* EtlSequence - 
-* Operation - 
+* EtlSequence - This is main object of this application and it contains whole details about sequence operations which we can perform with the tool we have created. More specific will be composing operations one after the other.
+* Operation - Contanis info about operations like wordcount, wordfrequency, caps and replace with the body details.
+
+*Transformation and Aggregation Operation:* - Below objects are used to transform http request into objects and send it to the service layer for further processing. 
+* CountRequest
+* FrecuencyRequest
+* AggregationResult
+* CapsRequest
+* ReplaceRequest
+* TransformationResult
+
 
 
 ### Build Instructions
