@@ -23,6 +23,9 @@ class SequenceRouteSpec extends Specification with TestHelper {
     "replace sequence operation return 400" >> {
       sequenceUriForReplaceOperationReturns400()
     }
+    "word count on 1st step in sequence operation returns 400" >> {
+      sequenceUriForWordCountOperationReturns400()
+    }
   }
 
   private[this] val aggregationServiceAlg = AggregationService.impl[IO]
@@ -32,11 +35,7 @@ class SequenceRouteSpec extends Specification with TestHelper {
 
   private[this] val capsOperationSuccessResponse: IO[Response[IO]] = {
     val body = Json.obj(
-      ("etl", Json.fromValues(List(
-        Json.obj(
-          ("opr", Json.fromString("caps"))
-        )
-      )))
+      ("etl", Json.fromValues(List(Json.obj(("opr", Json.fromString("caps"))))))
     )
     val request = Request[IO](Method.POST, Uri.uri("etl/sequence")).withEntity(body)
     Routes.sequenceRoutes(sequenceServiceAlg).orNotFound(request)
@@ -50,7 +49,8 @@ class SequenceRouteSpec extends Specification with TestHelper {
       ("etl", Json.fromValues(List(
         Json.obj(
           ("opr", Json.fromString("replace")),
-          ("body", Json.obj(("from", Json.fromString("this")), ("to", Json.fromString("test"))))
+          ("body", Json.obj(("from", Json.fromString("this")),
+            ("to", Json.fromString("test"))))
         )
       )))
     )
@@ -72,5 +72,15 @@ class SequenceRouteSpec extends Specification with TestHelper {
   private[this] def sequenceUriForReplaceOperationReturns400(): MatchResult[Boolean] =
     check(replaceOperationErrorResponse, Status.BadRequest, Some("")) must beTrue
 
+  private[this] val wordCountOperationOn1stStep: IO[Response[IO]] = {
+    val body = Json.obj(
+      ("etl", Json.fromValues(List(Json.obj(("opr", Json.fromString("wordcount"))))))
+    )
+    val request = Request[IO](Method.POST, Uri.uri("etl/sequence")).withEntity(body)
+    Routes.sequenceRoutes(sequenceServiceAlg).orNotFound(request)
+  }
+
+  private[this] def sequenceUriForWordCountOperationReturns400(): MatchResult[Boolean] =
+    check(wordCountOperationOn1stStep, Status.BadRequest, Some("")) must beTrue
 
 }
