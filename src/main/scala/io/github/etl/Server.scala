@@ -21,8 +21,9 @@ object Server {
     // want to extract a segments not checked
     // in the underlying routes.
     val httpApp = (
-        Routes.aggregationRoutes[F](aggregationServiceAlg) <+>
-        Routes.transformationRoutes[F](transformationServiceAlg) <+>
+      Routes.aggregationRoutes[F](aggregationServiceAlg) <+>
+        Routes.capsTransformationRoutes[F](transformationServiceAlg) <+>
+        Routes.replaceTransformationRoutes[F](transformationServiceAlg) <+>
         Routes.sequenceRoutes[F](sequenceServiceAlg)
       ).orNotFound
 
@@ -30,8 +31,10 @@ object Server {
     // With Middleware's in place
     val finalHttpApp = Logger.httpApp(logHeaders = true, logBody = true)(httpApp)
 
+    val port = 8080
+
     BlazeServerBuilder[F]
-      .bindHttp(8080, "0.0.0.0")
+      .bindHttp(port, "0.0.0.0")
       .withHttpApp(finalHttpApp)
       .serve
   }.drain

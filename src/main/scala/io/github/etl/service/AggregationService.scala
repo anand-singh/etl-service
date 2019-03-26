@@ -4,9 +4,7 @@ import cats.Applicative
 import cats.implicits._
 import io.circe.{Encoder, Json}
 import io.github.etl.domain.ResponseHeader
-import io.github.etl.exception.EtlServiceException
-import io.github.etl.util.CommonUtility.buildResponseHeader
-import io.github.etl.util.{CommonUtility, LoggerUtility, ResourceReader}
+import io.github.etl.util.{CommonUtility, LoggerUtility}
 import org.http4s.EntityEncoder
 import org.http4s.circe._
 
@@ -25,9 +23,9 @@ object AggregationService extends LoggerUtility {
 
   implicit def apply[F[_]](implicit ev: AggregationService[F]): AggregationService[F] = ev
 
-  final case class Count(requestId: String) extends AnyVal
+  final case class Count(requestId: String, dataSource: List[String])
 
-  final case class Frequency(requestId: String) extends AnyVal
+  final case class Frequency(requestId: String, dataSource: List[String])
 
   final case class AggregationResult(header: ResponseHeader, result: Map[String, Int])
 
@@ -45,30 +43,24 @@ object AggregationService extends LoggerUtility {
     def wordCount(count: AggregationService.Count): F[AggregationService.AggregationResult] = {
       info(s"Received word count request: $count")
       val countResult = (value: List[String]) => Map("count" -> value.size)
-      processAggregationResult(count.requestId, countResult).pure[F]
+      processAggregationResult(count.requestId, count.dataSource, countResult).pure[F]
     }
 
     def wordFrequency(frequency: AggregationService.Frequency): F[AggregationService.AggregationResult] = {
       info(s"Received word frequency request: $frequency")
       val frequencyResult = (value: List[String]) => value.groupBy((word: String) => word).mapValues(_.length)
-      processAggregationResult(frequency.requestId, frequencyResult).pure[F]
+      processAggregationResult(frequency.requestId, frequency.dataSource, frequencyResult).pure[F]
     }
 
   }
 
-  private[this] def processAggregationResult(reqId: String, f: List[String] => Map[String, Int]): AggregationResult = {
-    ResourceReader.words match {
-      case Right(value) =>
-        val header = CommonUtility.buildResponseHeader(reqId)
-        AggregationResult(header, f(value))
-      case Left(th) => handleError(reqId, th)
-    }
-  }
-
-  private[this] def handleError(requestId: String, th: EtlServiceException): AggregationResult = {
-    error(s"Error occurred: ${th.getMessage}", th)
-    val header = buildResponseHeader(requestId, th)
-    AggregationResult(header, Map.empty)
+  private[this] def processAggregationResult(reqId: String,
+                                             dataSource: List[String],
+                                             f: List[String] => Map[String, Int]
+                                            ): AggregationResult = {
+    val words = dataSource.flatMap(_.split(" "))
+    val header = CommonUtility.buildResponseHeader(reqId)
+    AggregationResult(header, f(words))
   }
 
 }
