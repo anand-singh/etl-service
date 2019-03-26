@@ -4,8 +4,6 @@ import org.slf4j.{Logger, LoggerFactory}
 
 /**
   * Logger helper
-  *
-  * @author Anand Singh
   */
 trait LoggerUtility {
 

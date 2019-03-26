@@ -32,3 +32,5 @@ scalacOptions ++= Seq(
   "-Ypartial-unification",
   "-Xfatal-warnings",
 )
+
+coverageExcludedPackages := "io.github.etl.*Main.*;io.github.etl.*Server.*"

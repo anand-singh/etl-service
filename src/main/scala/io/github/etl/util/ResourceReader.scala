@@ -2,7 +2,7 @@ package io.github.etl.util
 
 import io.github.etl.constant.StatusCode._
 import io.github.etl.constant.CommonConstant._
-import io.github.etl.exception.EtlServiceException
+import io.github.etl.exception.EtlException
 
 import scala.io.{BufferedSource, Source}
 import scala.util.control.NonFatal
@@ -17,7 +17,7 @@ object ResourceReader {
   private val RESOURCE_2 = s"$BASE_PATH/file2.txt"
   private val RESOURCE_3 = s"$BASE_PATH/file3.txt"
 
-  def load: Either[EtlServiceException, List[String]] = {
+  def load: Either[EtlException, List[String]] = {
     for {
       source1 <- read(RESOURCE_1).right
       source2 <- read(RESOURCE_2).right
@@ -25,11 +25,11 @@ object ResourceReader {
     } yield source1 ++ source2 ++ source3
   }
 
-  private def read(path: String): Either[EtlServiceException, List[String]] = {
+  private def read(path: String): Either[EtlException, List[String]] = {
     try {
       Right(using(Source.fromResource(path))(_.getLines().toList))
     } catch {
-      case NonFatal(ex) => Left(EtlServiceException(CODE_3000, RESOURCE_ERROR, ex))
+      case NonFatal(ex) => Left(EtlException(CODE_3000, RESOURCE_ERROR, ex))
     }
   }
 
@@ -41,11 +41,11 @@ object ResourceReader {
     }
   }
 
-  def words: Either[EtlServiceException, List[String]] = {
+  def words: Either[EtlException, List[String]] = {
     load.map(_.flatMap(_.split(" ")))
   }
 
-  def lines: Either[EtlServiceException, List[String]] = {
+  def lines: Either[EtlException, List[String]] = {
     load.map(value => value.filter(line => !line.trim.isEmpty))
   }
 

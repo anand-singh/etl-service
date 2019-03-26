@@ -35,7 +35,7 @@ class TransformationRouteSpec extends Specification with TestHelper {
 
   private[this] val capsOperationSuccessResponse: IO[Response[IO]] = {
     val capsRequest = Request[IO](Method.GET, Uri.uri("etl/transform/caps"))
-    Routes.transformationRoutes(transformationServiceAlg).orNotFound(capsRequest)
+    Routes.capsTransformationRoutes(transformationServiceAlg).orNotFound(capsRequest)
   }
 
   private[this] def capsUriReturns200(): MatchResult[Boolean] =
@@ -43,7 +43,7 @@ class TransformationRouteSpec extends Specification with TestHelper {
 
   private[this] val capsOperationErrorResponse: IO[Response[IO]] = {
     val capsNotFoundRequest = Request[IO](Method.GET, Uri.uri("etl/transform/caps-xyz"))
-    Routes.transformationRoutes(transformationServiceAlg).orNotFound(capsNotFoundRequest)
+    Routes.capsTransformationRoutes(transformationServiceAlg).orNotFound(capsNotFoundRequest)
   }
 
   private[this] def capsUriReturns404(): MatchResult[Boolean] =
@@ -52,7 +52,7 @@ class TransformationRouteSpec extends Specification with TestHelper {
   private[this] val replaceSuccessResponse: IO[Response[IO]] = {
     val body = Json.obj(("from", Json.fromString("this")), ("to", Json.fromString("test")))
     val replaceRequest = Request[IO](Method.POST, Uri.uri("etl/transform/replace")).withEntity(body)
-    Routes.transformationRoutes(transformationServiceAlg).orNotFound(replaceRequest)
+    Routes.replaceTransformationRoutes(transformationServiceAlg).orNotFound(replaceRequest)
   }
 
   private[this] def replaceUriReturns200(): MatchResult[Boolean] =
@@ -61,7 +61,7 @@ class TransformationRouteSpec extends Specification with TestHelper {
   private[this] val replaceBadRequestResponse: IO[Response[IO]] = {
     val body = Json.obj(("from", Json.fromString("this")))
     val replaceBadReqRequest = Request[IO](Method.POST, Uri.uri("etl/transform/replace")).withEntity(body)
-    Routes.transformationRoutes(transformationServiceAlg).orNotFound(replaceBadReqRequest)
+    Routes.replaceTransformationRoutes(transformationServiceAlg).orNotFound(replaceBadReqRequest)
   }
 
   private[this] def replaceUriReturns400(): MatchResult[Boolean] =
@@ -69,7 +69,7 @@ class TransformationRouteSpec extends Specification with TestHelper {
 
   private[this] val replaceErrorResponse: IO[Response[IO]] = {
     val replaceNotFoundRequest = Request[IO](Method.POST, Uri.uri("etl/transform/replace-xyz"))
-    Routes.transformationRoutes(transformationServiceAlg).orNotFound(replaceNotFoundRequest)
+    Routes.replaceTransformationRoutes(transformationServiceAlg).orNotFound(replaceNotFoundRequest)
   }
 
   private[this] def replaceUriReturns404(): MatchResult[Boolean] =

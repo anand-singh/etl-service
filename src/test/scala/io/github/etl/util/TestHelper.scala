@@ -5,6 +5,11 @@ import org.http4s.{EntityDecoder, Response, Status}
 
 trait TestHelper {
 
+  def dataSource: List[String] = ResourceReader.lines match {
+    case Left(th) => List(th.getMessage)
+    case Right(data) => data
+  }
+
   /**
     * Return true if match succeeds; otherwise false
     */
