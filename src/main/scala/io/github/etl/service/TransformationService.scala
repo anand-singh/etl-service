@@ -4,7 +4,7 @@ import java.util.regex.PatternSyntaxException
 
 import cats.Applicative
 import cats.implicits._
-import io.circe.{Encoder, Json}
+import io.circe.Encoder
 import io.github.etl.constant.CommonConstant._
 import io.github.etl.constant.StatusCode._
 import io.github.etl.domain.{OperationBody, ResponseHeader}
@@ -36,10 +36,8 @@ object TransformationService extends LoggerUtility {
   final case class TransformationResult(header: ResponseHeader, result: List[String])
 
   object TransformationResult {
-    implicit val transResultEncoder: Encoder[TransformationResult] = (a: TransformationResult) => Json.obj(
-      ("header", a.header.toJson),
-      ("result", Json.fromValues(a.result.map(Json.fromString)))
-    )
+    implicit val transResultEncoder: Encoder[TransformationResult] = (tr: TransformationResult) =>
+      transformationResultToJson("result", tr)
 
     implicit def transResultEntityEncoder[F[_] : Applicative]: EntityEncoder[F, TransformationResult] =
       jsonEncoderOf[F, TransformationResult]

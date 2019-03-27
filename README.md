@@ -1,7 +1,7 @@
 # ETL Service
 ETL Service (REST API performing extract, transform and load operations) using Scala & http4s
 
-Normally, I uses Play Framework & AkkaHTTP to build REST API with the Scala & Java. But in this code example I used http4s because I needs to complete this design using FP fundamentals. And http4s made it quite easy for me as it supports Typeful and functional design. Composability is quite easy task using this tool because of Cats library ecosystem.
+Normally, I uses Play Framework & AkkaHTTP to build REST API with the Scala & Java. But in this code example I used http4s as I needs to complete this design using FP fundamentals. And http4s made it quite easy for me as it supports Typeful and functional design. Composability is quite easy task using this tool because of Cats library ecosystem.
 
 ##### This is a classic ETL Service, backed by Scala & http4s. It demonstrates:
 * Extensible and maintainable design

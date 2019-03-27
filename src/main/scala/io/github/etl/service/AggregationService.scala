@@ -4,7 +4,8 @@ import cats.Applicative
 import cats.implicits._
 import io.circe.{Encoder, Json}
 import io.github.etl.domain.ResponseHeader
-import io.github.etl.util.{CommonUtility, LoggerUtility}
+import io.github.etl.util.LoggerUtility
+import io.github.etl.util.CommonUtility._
 import org.http4s.EntityEncoder
 import org.http4s.circe._
 
@@ -30,10 +31,8 @@ object AggregationService extends LoggerUtility {
   final case class AggregationResult(header: ResponseHeader, result: Map[String, Int])
 
   object AggregationResult {
-    implicit val wordCountEncoder: Encoder[AggregationResult] = (a: AggregationResult) => Json.obj(
-      ("header", a.header.toJson),
-      ("result", Json.fromValues(a.result.map { case (key, value) => Json.obj((key, Json.fromInt(value))) }))
-    )
+    implicit val wordCountEncoder: Encoder[AggregationResult] = (aggrResult: AggregationResult) =>
+      aggregationResultToJson("result", aggrResult)
 
     implicit def wordCountEntityEncoder[F[_] : Applicative]: EntityEncoder[F, AggregationResult] =
       jsonEncoderOf[F, AggregationResult]
@@ -59,7 +58,7 @@ object AggregationService extends LoggerUtility {
                                              f: List[String] => Map[String, Int]
                                             ): AggregationResult = {
     val words = dataSource.flatMap(_.split(" "))
-    val header = CommonUtility.buildResponseHeader(reqId)
+    val header = buildResponseHeader(reqId)
     AggregationResult(header, f(words))
   }
 

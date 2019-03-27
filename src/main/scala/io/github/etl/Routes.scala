@@ -9,10 +9,11 @@ import io.circe.generic.auto._
 import io.github.etl.constant.CommonConstant.Operations.{CAPS, REPLACE, WORD_COUNT, WORD_FREQUENCY}
 import io.github.etl.constant.CommonConstant._
 import io.github.etl.constant.StatusCode._
-import io.github.etl.domain.{OperationBody, EtlSequence}
+import io.github.etl.domain.{EtlSequence, OperationBody}
 import io.github.etl.exception.EtlException
+import io.github.etl.service.AggregationService.AggregationResult
 import io.github.etl.service.SequenceService.SequenceRequest
-import io.github.etl.service.TransformationService.ReplaceRequest
+import io.github.etl.service.TransformationService.{ReplaceRequest, TransformationResult}
 import io.github.etl.service.{AggregationService, SequenceService, TransformationService}
 import io.github.etl.util.CommonUtility._
 import io.github.etl.util.{LoggerUtility, ResourceReader}
@@ -111,7 +112,14 @@ object Routes extends LoggerUtility {
                   replaceTransOpt <- SS.applyTransformation(REPLACE.toString, sequenceRequest, capsTransOpt.map(_.result).getOrElse(data))
                   wordCountAggrOpt <- SS.applyAggregation(WORD_COUNT.toString, sequenceRequest, replaceTransOpt.map(_.result).getOrElse(data))
                   wordFrequencyAggrOpt <- SS.applyAggregation(WORD_FREQUENCY.toString, sequenceRequest, replaceTransOpt.map(_.result).getOrElse(data))
-                  resp <- Ok(Json.obj())
+                  resp <- Ok(Json.obj(
+                    ("etlResponse", Json.fromValues(
+                      processTransResult(CAPS, capsTransOpt) ++
+                        processTransResult(REPLACE, replaceTransOpt) ++
+                        processAggrResult(WORD_COUNT, wordCountAggrOpt) ++
+                        processAggrResult(WORD_COUNT, wordFrequencyAggrOpt)
+                    ))
+                  ))
                 } yield resp
             }
           case Left(th) =>
@@ -119,6 +127,20 @@ object Routes extends LoggerUtility {
             BadRequest(handleBadRequest(requestId, etlServiceException))
         }
     }
+  }
+
+  private[this] def processAggrResult(operation: Operations.Value,
+                                      aggrResultOpt: Option[AggregationResult]): List[Json] = {
+    aggrResultOpt.map { aggrResult =>
+      aggregationResultToJson(operation.toString, aggrResult)
+    }.toList
+  }
+
+  private[this] def processTransResult(operation: Operations.Value,
+                                       transResultOpt: Option[TransformationResult]): List[Json] = {
+    transResultOpt.map { transResult =>
+      transformationResultToJson(operation.toString, transResult)
+    }.toList
   }
 
   private[this] def handleBadRequest(reqId: String, th: EtlException): Json = {
