@@ -7,7 +7,7 @@ import cats.implicits._
 import io.circe.Encoder
 import io.github.etl.constant.CommonConstant._
 import io.github.etl.constant.StatusCode._
-import io.github.etl.domain.{OperationBody, ResponseHeader}
+import io.github.etl.domain.{EtlRequest, EtlResult, OperationBody, ResponseHeader}
 import io.github.etl.exception.EtlException
 import io.github.etl.util.CommonUtility._
 import io.github.etl.util.LoggerUtility
@@ -29,15 +29,15 @@ object TransformationService extends LoggerUtility {
 
   implicit def apply[F[_]](implicit ev: TransformationService[F]): TransformationService[F] = ev
 
-  final case class CapsRequest(requestId: String, dataSource: List[String])
+  final case class CapsRequest(requestId: String, dataSource: List[String]) extends EtlRequest
 
-  final case class ReplaceRequest(requestId: String, body: OperationBody, dataSource: List[String])
+  final case class ReplaceRequest(requestId: String, body: OperationBody, dataSource: List[String]) extends EtlRequest
 
-  final case class TransformationResult(header: ResponseHeader, result: List[String])
+  final case class TransformationResult(header: ResponseHeader, result: List[String]) extends EtlResult
 
   object TransformationResult {
     implicit val transResultEncoder: Encoder[TransformationResult] = (tr: TransformationResult) =>
-      transformationResultToJson("result", tr)
+      etlResultToJson("result", tr)
 
     implicit def transResultEntityEncoder[F[_] : Applicative]: EntityEncoder[F, TransformationResult] =
       jsonEncoderOf[F, TransformationResult]

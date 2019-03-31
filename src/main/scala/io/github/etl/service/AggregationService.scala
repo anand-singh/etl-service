@@ -2,10 +2,10 @@ package io.github.etl.service
 
 import cats.Applicative
 import cats.implicits._
-import io.circe.{Encoder, Json}
-import io.github.etl.domain.ResponseHeader
-import io.github.etl.util.LoggerUtility
+import io.circe.Encoder
+import io.github.etl.domain.{EtlRequest, EtlResult, ResponseHeader}
 import io.github.etl.util.CommonUtility._
+import io.github.etl.util.LoggerUtility
 import org.http4s.EntityEncoder
 import org.http4s.circe._
 
@@ -24,15 +24,15 @@ object AggregationService extends LoggerUtility {
 
   implicit def apply[F[_]](implicit ev: AggregationService[F]): AggregationService[F] = ev
 
-  final case class Count(requestId: String, dataSource: List[String])
+  final case class Count(requestId: String, dataSource: List[String]) extends EtlRequest
 
-  final case class Frequency(requestId: String, dataSource: List[String])
+  final case class Frequency(requestId: String, dataSource: List[String]) extends EtlRequest
 
-  final case class AggregationResult(header: ResponseHeader, result: Map[String, Int])
+  final case class AggregationResult(header: ResponseHeader, result: Map[String, Int]) extends EtlResult
 
   object AggregationResult {
     implicit val wordCountEncoder: Encoder[AggregationResult] = (aggrResult: AggregationResult) =>
-      aggregationResultToJson("result", aggrResult)
+      etlResultToJson("result", aggrResult)
 
     implicit def wordCountEntityEncoder[F[_] : Applicative]: EntityEncoder[F, AggregationResult] =
       jsonEncoderOf[F, AggregationResult]

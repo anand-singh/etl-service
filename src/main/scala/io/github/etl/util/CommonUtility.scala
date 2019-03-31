@@ -6,7 +6,7 @@ import io.circe.Json
 import io.github.etl.constant.CommonConstant.Operations._
 import io.github.etl.constant.CommonConstant._
 import io.github.etl.constant.StatusCode._
-import io.github.etl.domain.{Operation, ResponseHeader}
+import io.github.etl.domain.{EtlResult, Operation, ResponseHeader}
 import io.github.etl.exception.EtlException
 import io.github.etl.service.AggregationService.AggregationResult
 import io.github.etl.service.TransformationService.TransformationResult
@@ -47,18 +47,12 @@ object CommonUtility extends LoggerUtility {
     }
   }
 
-  def aggregationResultToJson(operation: String, aggregationResult: AggregationResult): Json = {
-    Json.obj(
-      ("header", aggregationResult.header.toJson),
-      (operation.toString, mapToJson(aggregationResult.result))
-    )
-  }
-
-  def transformationResultToJson(operation: String, tr: TransformationResult): Json = {
-    Json.obj(
-      ("header", tr.header.toJson),
-      (operation.toString, Json.fromValues(tr.result.map(Json.fromString)))
-    )
+  def etlResultToJson(operation: String, result: EtlResult): Json = {
+    val jsonResult = result match {
+      case ar: AggregationResult => mapToJson(ar.result)
+      case tr: TransformationResult => Json.fromValues(tr.result.map(Json.fromString))
+    }
+    Json.obj(("header", result.header.toJson), (operation.toString, jsonResult))
   }
 
   private[this] def mapToJson(dataMap: Map[String, Int]): Json = {

@@ -2,19 +2,16 @@ package io.github.etl.service
 
 import cats.Applicative
 import cats.implicits._
-import io.circe.{Encoder, Json}
 import io.github.etl.constant.CommonConstant.Operations.{CAPS, REPLACE, WORD_COUNT, WORD_FREQUENCY}
 import io.github.etl.constant.CommonConstant._
 import io.github.etl.constant.StatusCode.CODE_4001
-import io.github.etl.domain.{Operation, ResponseHeader, EtlSequence}
+import io.github.etl.domain.{EtlRequest, EtlSequence, Operation}
 import io.github.etl.exception.EtlException
 import io.github.etl.service.AggregationService.AggregationResult
 import io.github.etl.service.SequenceService.SequenceRequest
 import io.github.etl.service.TransformationService.TransformationResult
 import io.github.etl.util.CommonUtility._
 import io.github.etl.util.LoggerUtility
-import org.http4s.EntityEncoder
-import org.http4s.circe._
 
 /**
   * Execute sequence process
@@ -31,7 +28,7 @@ object SequenceService extends LoggerUtility {
 
   implicit def apply[F[_]](implicit ev: SequenceService[F]): SequenceService[F] = ev
 
-  final case class SequenceRequest(requestId: String, sequence: EtlSequence)
+  final case class SequenceRequest(requestId: String, sequence: EtlSequence) extends EtlRequest
 
   def impl[F[_] : Applicative](TS: TransformationService[F], AS: AggregationService[F]): SequenceService[F] = new SequenceService[F] {
 

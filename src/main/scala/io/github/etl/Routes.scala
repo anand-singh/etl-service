@@ -9,9 +9,8 @@ import io.circe.generic.auto._
 import io.github.etl.constant.CommonConstant.Operations.{CAPS, REPLACE, WORD_COUNT, WORD_FREQUENCY}
 import io.github.etl.constant.CommonConstant._
 import io.github.etl.constant.StatusCode._
-import io.github.etl.domain.{EtlSequence, OperationBody}
+import io.github.etl.domain.{EtlResult, EtlSequence, OperationBody}
 import io.github.etl.exception.EtlException
-import io.github.etl.service.AggregationService.AggregationResult
 import io.github.etl.service.SequenceService.SequenceRequest
 import io.github.etl.service.TransformationService.{ReplaceRequest, TransformationResult}
 import io.github.etl.service.{AggregationService, SequenceService, TransformationService}
@@ -20,7 +19,7 @@ import io.github.etl.util.{LoggerUtility, ResourceReader}
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.util.CaseInsensitiveString
-import org.http4s.{EntityDecoder, Headers, HttpRoutes}
+import org.http4s.{EntityDecoder, Headers, HttpRoutes, Response}
 
 object Routes extends LoggerUtility {
 
@@ -30,18 +29,16 @@ object Routes extends LoggerUtility {
     HttpRoutes.of[F] {
       case req@GET -> Root / "etl" / "aggregate" / "wordcount" =>
         val requestId = extractRequestId(req.headers)
-        ResourceReader.lines match {
-          case Left(th) => BadRequest(handleBadRequest(requestId, th))
-          case Right(data) => for {
+        processRequest(dsl, requestId) { data: List[String] =>
+          for {
             wordCount <- AS.wordCount(AggregationService.Count(requestId, data))
             resp <- Ok(wordCount)
           } yield resp
         }
       case req@GET -> Root / "etl" / "aggregate" / "wordfrequency" =>
         val requestId = extractRequestId(req.headers)
-        ResourceReader.lines match {
-          case Left(th) => BadRequest(handleBadRequest(requestId, th))
-          case Right(data) => for {
+        processRequest(dsl, requestId) { data: List[String] =>
+          for {
             wordFrequency <- AS.wordFrequency(AggregationService.Frequency(requestId, data))
             resp <- Ok(wordFrequency)
           } yield resp
@@ -55,13 +52,11 @@ object Routes extends LoggerUtility {
     HttpRoutes.of[F] {
       case req@GET -> Root / "etl" / "transform" / "caps" =>
         val requestId = extractRequestId(req.headers)
-        ResourceReader.lines match {
-          case Left(th) => BadRequest(handleBadRequest(requestId, th))
-          case Right(data) =>
-            for {
-              result <- TS.caps(TransformationService.CapsRequest(requestId, data))
-              resp <- Ok(result)
-            } yield resp
+        processRequest(dsl, requestId) { data: List[String] =>
+          for {
+            result <- TS.caps(TransformationService.CapsRequest(requestId, data))
+            resp <- Ok(result)
+          } yield resp
         }
     }
   }
@@ -75,17 +70,13 @@ object Routes extends LoggerUtility {
         val requestId = extractRequestId(req.headers)
         req.as[OperationBody].attempt.flatMap {
           case Right(value) =>
-            ResourceReader.lines match {
-              case Left(th) => BadRequest(handleBadRequest(requestId, th))
-              case Right(data) =>
-                for {
-                  result <- TS.replace(ReplaceRequest(requestId, OperationBody(value.from, value.to), data))
-                  resp <- Ok(result)
-                } yield resp
+            processRequest(dsl, requestId) { data: List[String] =>
+              for {
+                result <- TS.replace(ReplaceRequest(requestId, OperationBody(value.from, value.to), data))
+                resp <- Ok(result)
+              } yield resp
             }
-          case Left(th) =>
-            val etlServiceException = EtlException(CODE_4000, JSON_ERROR, th)
-            BadRequest(handleBadRequest(requestId, etlServiceException))
+          case Left(th) => BadRequest(handleBadRequest(requestId, EtlException(CODE_4000, JSON_ERROR, th)))
         }
     }
   }
@@ -100,59 +91,50 @@ object Routes extends LoggerUtility {
         val requestId = extractRequestId(req.headers)
         req.as[EtlSequence].attempt.flatMap {
           case Right(value) if !validateSequenceOperations(value.etl) =>
-            val etlServiceException = EtlException(CODE_4003, OPERATION_ERROR)
-            BadRequest(handleBadRequest(requestId, etlServiceException))
+            BadRequest(handleBadRequest(requestId, EtlException(CODE_4003, OPERATION_ERROR)))
           case Right(value) =>
-            ResourceReader.lines match {
-              case Left(th) => BadRequest(handleBadRequest(requestId, th))
-              case Right(data) =>
-                val sequenceRequest = SequenceRequest(requestId, value)
-                for {
-                  capsTransOpt <- SS.applyTransformation(CAPS.toString, sequenceRequest, data)
-                  replaceTransOpt <- SS.applyTransformation(REPLACE.toString, sequenceRequest, capsTransOpt.map(_.result).getOrElse(data))
-                  wordCountAggrOpt <- SS.applyAggregation(WORD_COUNT.toString, sequenceRequest, replaceTransOpt.map(_.result).getOrElse(data))
-                  wordFrequencyAggrOpt <- SS.applyAggregation(WORD_FREQUENCY.toString, sequenceRequest, replaceTransOpt.map(_.result).getOrElse(data))
-                  resp <- Ok(Json.obj(
-                    ("etlResponse", Json.fromValues(
-                      processTransResult(CAPS, capsTransOpt) ++
-                        processTransResult(REPLACE, replaceTransOpt) ++
-                        processAggrResult(WORD_COUNT, wordCountAggrOpt) ++
-                        processAggrResult(WORD_COUNT, wordFrequencyAggrOpt)
-                    ))
+            processRequest(dsl, requestId) { data: List[String] =>
+              val sr = SequenceRequest(requestId, value)
+              for {
+                capsTransOpt <- SS.applyTransformation(CAPS.toString, sr, data)
+                replaceTransOpt <- SS.applyTransformation(REPLACE.toString, sr, extractData(data, capsTransOpt))
+                wordCountAggrOpt <- SS.applyAggregation(WORD_COUNT.toString, sr, extractData(data, replaceTransOpt))
+                wordFrequencyAggrOpt <- SS.applyAggregation(WORD_FREQUENCY.toString, sr, extractData(data, replaceTransOpt))
+                resp <- Ok(Json.obj(
+                  ("etlResponse", Json.fromValues(processResult(CAPS, capsTransOpt) ++ processResult(REPLACE, replaceTransOpt) ++
+                    processResult(WORD_COUNT, wordCountAggrOpt) ++ processResult(WORD_COUNT, wordFrequencyAggrOpt)
                   ))
-                } yield resp
+                ))
+              } yield resp
             }
-          case Left(th) =>
-            val etlServiceException = EtlException(CODE_4000, JSON_ERROR, th)
-            BadRequest(handleBadRequest(requestId, etlServiceException))
+          case Left(th) => BadRequest(handleBadRequest(requestId, EtlException(CODE_4000, JSON_ERROR, th)))
         }
     }
   }
 
-  private[this] def processAggrResult(operation: Operations.Value,
-                                      aggrResultOpt: Option[AggregationResult]): List[Json] = {
-    aggrResultOpt.map { aggrResult =>
-      aggregationResultToJson(operation.toString, aggrResult)
-    }.toList
+  def processRequest[F[_] : Sync](dsl: Http4sDsl[F], reqId: String)(f: List[String] => F[Response[F]]): F[Response[F]] = {
+    import dsl._
+    ResourceReader.lines match {
+      case Left(th) => BadRequest(handleBadRequest(reqId, th))
+      case Right(data) => f(data)
+    }
   }
 
-  private[this] def processTransResult(operation: Operations.Value,
-                                       transResultOpt: Option[TransformationResult]): List[Json] = {
-    transResultOpt.map { transResult =>
-      transformationResultToJson(operation.toString, transResult)
-    }.toList
+  private[this] def processResult(operation: Operations.Value, resultOpt: Option[EtlResult]): List[Json] = {
+    resultOpt.map { result => etlResultToJson(operation.toString, result) }.toList
   }
 
   private[this] def handleBadRequest(reqId: String, th: EtlException): Json = {
     error(th.getMessage, th)
-    val header = buildResponseHeader(reqId, th)
-    Json.obj(("header", header.toJson), ("result", Json.obj()))
+    Json.obj(("header", buildResponseHeader(reqId, th).toJson), ("result", Json.obj()))
   }
 
   private[this] def extractRequestId(headers: Headers): String = {
-    headers.get(CaseInsensitiveString("Request-Id"))
-      .map { header => header.value }
-      .getOrElse(UUID.randomUUID().toString)
+    headers.get(CaseInsensitiveString("Request-Id")).map(_.value).getOrElse(UUID.randomUUID().toString)
+  }
+
+  private[this] def extractData(data: List[String], capsTransOpt: Option[TransformationResult]): List[String] = {
+    capsTransOpt.map(_.result).getOrElse(data)
   }
 
 }
