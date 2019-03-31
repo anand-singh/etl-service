@@ -100,11 +100,9 @@ object Routes extends LoggerUtility {
                 replaceTransOpt <- SS.applyTransformation(REPLACE.toString, sr, extractData(data, capsTransOpt))
                 wordCountAggrOpt <- SS.applyAggregation(WORD_COUNT.toString, sr, extractData(data, replaceTransOpt))
                 wordFrequencyAggrOpt <- SS.applyAggregation(WORD_FREQUENCY.toString, sr, extractData(data, replaceTransOpt))
-                resp <- Ok(Json.obj(
-                  ("etlResponse", Json.fromValues(processResult(CAPS, capsTransOpt) ++ processResult(REPLACE, replaceTransOpt) ++
-                    processResult(WORD_COUNT, wordCountAggrOpt) ++ processResult(WORD_COUNT, wordFrequencyAggrOpt)
-                  ))
-                ))
+                resp <- Ok(Json.obj(("etlResponse", Json.fromValues(processResult(CAPS, capsTransOpt) ++
+                  processResult(REPLACE, replaceTransOpt) ++ processResult(WORD_COUNT, wordCountAggrOpt) ++
+                  processResult(WORD_COUNT, wordFrequencyAggrOpt)))))
               } yield resp
             }
           case Left(th) => BadRequest(handleBadRequest(requestId, EtlException(CODE_4000, JSON_ERROR, th)))
