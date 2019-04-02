@@ -15,12 +15,15 @@ Normally, I uses Play Framework & AkkaHTTP to build REST API with the Scala & Ja
 * Operation - Contains info about operations like word count, word frequency, caps and replace with the body details.
 
 *Transformation and Aggregation Operation:* - Below objects are used to transform http request into objects and send it to the service layer for further processing. 
-* CountRequest
-* FrequencyRequest
-* AggregationResult
-* CapsRequest
-* ReplaceRequest
-* TransformationResult
+* EtlRequest
+  * CountRequest
+  * FrequencyRequest
+  * CapsRequest
+  * ReplaceRequest
+  * SequenceRequest
+* EtlResult
+  * AggregationResult
+  * TransformationResult
 
 ### Test Cases
 * All the routes and request/response validation level test cases are available in the `package test.scala.io.github.etl.route` like:

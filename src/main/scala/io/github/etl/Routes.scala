@@ -27,7 +27,7 @@ object Routes extends LoggerUtility {
     val dsl = new Http4sDsl[F] {}
     import dsl._
     HttpRoutes.of[F] {
-      case req@GET -> Root / "etl" / "aggregate" / "wordcount" =>
+      case req@GET -> Root / BASE_PATH / AGGREGATE_PATH / WORD_COUNT_PATH =>
         val requestId = extractRequestId(req.headers)
         processRequest(dsl, requestId) { data: List[String] =>
           for {
@@ -35,7 +35,7 @@ object Routes extends LoggerUtility {
             resp <- Ok(wordCount)
           } yield resp
         }
-      case req@GET -> Root / "etl" / "aggregate" / "wordfrequency" =>
+      case req@GET -> Root / BASE_PATH / AGGREGATE_PATH / WORD_FREQUENCY_PATH =>
         val requestId = extractRequestId(req.headers)
         processRequest(dsl, requestId) { data: List[String] =>
           for {
@@ -50,7 +50,7 @@ object Routes extends LoggerUtility {
     val dsl = new Http4sDsl[F] {}
     import dsl._
     HttpRoutes.of[F] {
-      case req@GET -> Root / "etl" / "transform" / "caps" =>
+      case req@GET -> Root / BASE_PATH / TRANSFORM_PATH / CAPS_PATH =>
         val requestId = extractRequestId(req.headers)
         processRequest(dsl, requestId) { data: List[String] =>
           for {
@@ -65,7 +65,7 @@ object Routes extends LoggerUtility {
     val dsl = new Http4sDsl[F] {}
     import dsl._
     HttpRoutes.of[F] {
-      case req@POST -> Root / "etl" / "transform" / "replace" =>
+      case req@POST -> Root / BASE_PATH / TRANSFORM_PATH / REPLACE_PATH =>
         implicit val decoder: EntityDecoder[F, OperationBody] = jsonOf[F, OperationBody]
         val requestId = extractRequestId(req.headers)
         req.as[OperationBody].attempt.flatMap {
@@ -86,7 +86,7 @@ object Routes extends LoggerUtility {
     import dsl._
 
     HttpRoutes.of[F] {
-      case req@POST -> Root / "etl" / "sequence" =>
+      case req@POST -> Root / BASE_PATH / SEQUENCE_PATH =>
         implicit val decoder: EntityDecoder[F, EtlSequence] = jsonOf[F, EtlSequence]
         val requestId = extractRequestId(req.headers)
         req.as[EtlSequence].attempt.flatMap {
@@ -100,11 +100,9 @@ object Routes extends LoggerUtility {
                 replaceTransOpt <- SS.applyTransformation(REPLACE.toString, sr, extractData(data, capsTransOpt))
                 wordCountAggrOpt <- SS.applyAggregation(WORD_COUNT.toString, sr, extractData(data, replaceTransOpt))
                 wordFrequencyAggrOpt <- SS.applyAggregation(WORD_FREQUENCY.toString, sr, extractData(data, replaceTransOpt))
-                resp <- Ok(Json.obj(
-                  ("etlResponse", Json.fromValues(processResult(CAPS, capsTransOpt) ++ processResult(REPLACE, replaceTransOpt) ++
-                    processResult(WORD_COUNT, wordCountAggrOpt) ++ processResult(WORD_COUNT, wordFrequencyAggrOpt)
-                  ))
-                ))
+                resp <- Ok(Json.obj((ETL_RESPONSE_TEXT, Json.fromValues(processResult(CAPS, capsTransOpt) ++
+                  processResult(REPLACE, replaceTransOpt) ++ processResult(WORD_COUNT, wordCountAggrOpt) ++
+                  processResult(WORD_COUNT, wordFrequencyAggrOpt)))))
               } yield resp
             }
           case Left(th) => BadRequest(handleBadRequest(requestId, EtlException(CODE_4000, JSON_ERROR, th)))
@@ -126,11 +124,11 @@ object Routes extends LoggerUtility {
 
   private[this] def handleBadRequest(reqId: String, th: EtlException): Json = {
     error(th.getMessage, th)
-    Json.obj(("header", buildResponseHeader(reqId, th).toJson), ("result", Json.obj()))
+    Json.obj((HEADER_TEXT, buildResponseHeader(reqId, th).toJson), (RESULT_TEXT, Json.obj()))
   }
 
   private[this] def extractRequestId(headers: Headers): String = {
-    headers.get(CaseInsensitiveString("Request-Id")).map(_.value).getOrElse(UUID.randomUUID().toString)
+    headers.get(CaseInsensitiveString(REQUEST_ID_TEXT)).map(_.value).getOrElse(UUID.randomUUID().toString)
   }
 
   private[this] def extractData(data: List[String], capsTransOpt: Option[TransformationResult]): List[String] = {

@@ -52,7 +52,7 @@ object CommonUtility extends LoggerUtility {
       case ar: AggregationResult => mapToJson(ar.result)
       case tr: TransformationResult => Json.fromValues(tr.result.map(Json.fromString))
     }
-    Json.obj(("header", result.header.toJson), (operation.toString, jsonResult))
+    Json.obj((HEADER_TEXT, result.header.toJson), (operation.toString, jsonResult))
   }
 
   private[this] def mapToJson(dataMap: Map[String, Int]): Json = {
