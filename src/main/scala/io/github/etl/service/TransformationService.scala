@@ -37,7 +37,7 @@ object TransformationService extends LoggerUtility {
 
   object TransformationResult {
     implicit val transResultEncoder: Encoder[TransformationResult] = (tr: TransformationResult) =>
-      etlResultToJson("result", tr)
+      etlResultToJson(RESULT_TEXT, tr)
 
     implicit def transResultEntityEncoder[F[_] : Applicative]: EntityEncoder[F, TransformationResult] =
       jsonEncoderOf[F, TransformationResult]

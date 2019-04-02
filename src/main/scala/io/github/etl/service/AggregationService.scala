@@ -8,6 +8,7 @@ import io.github.etl.util.CommonUtility._
 import io.github.etl.util.LoggerUtility
 import org.http4s.EntityEncoder
 import org.http4s.circe._
+import io.github.etl.constant.CommonConstant._
 
 /**
   * AggregationService - Supports word count & frequency operations
@@ -32,7 +33,7 @@ object AggregationService extends LoggerUtility {
 
   object AggregationResult {
     implicit val wordCountEncoder: Encoder[AggregationResult] = (aggrResult: AggregationResult) =>
-      etlResultToJson("result", aggrResult)
+      etlResultToJson(RESULT_TEXT, aggrResult)
 
     implicit def wordCountEntityEncoder[F[_] : Applicative]: EntityEncoder[F, AggregationResult] =
       jsonEncoderOf[F, AggregationResult]
@@ -41,7 +42,7 @@ object AggregationService extends LoggerUtility {
   def impl[F[_] : Applicative]: AggregationService[F] = new AggregationService[F] {
     def wordCount(count: AggregationService.Count): F[AggregationService.AggregationResult] = {
       info(s"Received word count request: $count")
-      val countResult = (value: List[String]) => Map("count" -> value.size)
+      val countResult = (value: List[String]) => Map(COUNT_TEXT -> value.size)
       processAggregationResult(count.requestId, count.dataSource, countResult).pure[F]
     }
 
