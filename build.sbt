@@ -1,5 +1,5 @@
-val Http4sVersion = "0.20.23"
-val CirceVersion = "0.11.1"
+val Http4sVersion = "0.20.0-M6"
+val CirceVersion = "0.11.2"
 val Specs2Version = "4.1.0"
 val LogbackVersion = "1.2.3"
 
@@ -8,7 +8,7 @@ lazy val root = (project in file("."))
     organization := "io.github.anand-singh",
     name := "etl-service",
     version := "0.0.1-SNAPSHOT",
-    scalaVersion := "2.12.8",
+    scalaVersion := "2.12.13",
     scalacOptions ++= Seq("-Ypartial-unification"),
     libraryDependencies ++= Seq(
       "org.http4s"      %% "http4s-blaze-server" % Http4sVersion,
@@ -20,7 +20,7 @@ lazy val root = (project in file("."))
       "ch.qos.logback"  %  "logback-classic"     % LogbackVersion
     ),
     addCompilerPlugin("org.spire-math" %% "kind-projector"     % "0.9.6"),
-    addCompilerPlugin("com.olegpy"     %% "better-monadic-for" % "0.2.4")
+    addCompilerPlugin("com.olegpy"     %% "better-monadic-for" % "0.3.1")
   )
 
 scalacOptions ++= Seq(
