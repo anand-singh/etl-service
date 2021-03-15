@@ -1,4 +1,4 @@
-val Http4sVersion = "0.20.23"
+val Http4sVersion = "0.21.20"
 val CirceVersion = "0.11.2"
 val Specs2Version = "4.1.2"
 val LogbackVersion = "1.2.3"
