@@ -19,9 +19,9 @@ object ResourceReader {
 
   def load: Either[EtlException, List[String]] = {
     for {
-      source1 <- read(RESOURCE_1).right
-      source2 <- read(RESOURCE_2).right
-      source3 <- read(RESOURCE_3).right
+      source1 <- read(RESOURCE_1)
+      source2 <- read(RESOURCE_2)
+      source3 <- read(RESOURCE_3)
     } yield source1 ++ source2 ++ source3
   }
 
@@ -46,7 +46,7 @@ object ResourceReader {
   }
 
   def lines: Either[EtlException, List[String]] = {
-    load.map(value => value.filter(line => !line.trim.isEmpty))
+    load.map(value => value.filter(line => line.trim.nonEmpty))
   }
 
 }

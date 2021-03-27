@@ -48,7 +48,7 @@ object AggregationService extends LoggerUtility {
 
     def wordFrequency(frequency: AggregationService.Frequency): F[AggregationService.AggregationResult] = {
       info(s"Received word frequency request: $frequency")
-      val frequencyResult = (value: List[String]) => value.groupBy((word: String) => word).mapValues(_.length)
+      val frequencyResult = (value: List[String]) => value.groupBy((word: String) => word).view.mapValues(_.length).toMap
       processAggregationResult(frequency.requestId, frequency.dataSource, frequencyResult).pure[F]
     }
 

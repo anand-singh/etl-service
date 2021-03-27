@@ -18,11 +18,11 @@ trait TestHelper {
             expectedBody: Option[String])(
              implicit ev: EntityDecoder[IO, String]
            ): Boolean = {
-    val actualResp = actual.unsafeRunSync
+    val actualResp = actual.unsafeRunSync()
     val statusCheck = actualResp.status == expectedStatus
     val bodyCheck = expectedBody.fold[Boolean](
-      actualResp.body.compile.toVector.unsafeRunSync.isEmpty)( // Verify Response's body is empty.
-      expected => actualResp.as[String].unsafeRunSync.toLowerCase contains expected.toLowerCase
+      actualResp.body.compile.toVector.unsafeRunSync().isEmpty)( // Verify Response's body is empty.
+      expected => actualResp.as[String].unsafeRunSync().toLowerCase contains expected.toLowerCase
     )
     statusCheck && bodyCheck
   }
