@@ -1,4 +1,4 @@
-# ETL Service [![Codeship Status for anand-singh/etl-service](https://app.codeship.com/projects/8f4f9859-9240-42d0-a999-7c94b2b5c840/status?branch=master)](https://app.codeship.com/projects/435022)
+# ETL Service [![Scala CI](https://github.com/anand-singh/etl-service/actions/workflows/scala.yml/badge.svg)](https://github.com/anand-singh/etl-service/actions/workflows/scala.yml)
 
 ETL Service (REST API performing extract, transform and load operations) using Scala & http4s
 
