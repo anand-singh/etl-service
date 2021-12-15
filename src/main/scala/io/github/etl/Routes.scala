@@ -18,8 +18,8 @@ import io.github.etl.util.CommonUtility._
 import io.github.etl.util.{LoggerUtility, ResourceReader}
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
-import org.http4s.util.CaseInsensitiveString
 import org.http4s.{EntityDecoder, Headers, HttpRoutes, Response}
+import org.typelevel.ci.CIString
 
 object Routes extends LoggerUtility {
 
@@ -128,7 +128,7 @@ object Routes extends LoggerUtility {
   }
 
   private[this] def extractRequestId(headers: Headers): String = {
-    headers.get(CaseInsensitiveString(REQUEST_ID_TEXT)).map(_.value).getOrElse(UUID.randomUUID().toString)
+    headers.get(CIString(REQUEST_ID_TEXT)).map(_.value).getOrElse(UUID.randomUUID().toString)
   }
 
   private[this] def extractData(data: List[String], capsTransOpt: Option[TransformationResult]): List[String] = {
