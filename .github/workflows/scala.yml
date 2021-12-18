@@ -19,7 +19,7 @@ jobs:
         java-version: '11'
         distribution: 'adopt'
     - name: Run Tests
-      run: sbt clean compile test
+      run: sbt clean compile
       
   merge:
     name: Merge dependency update

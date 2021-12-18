@@ -1,6 +1,7 @@
 package io.github.etl.service
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import io.github.etl.constant.CommonConstant.Operations
 import io.github.etl.constant.StatusCode
 import io.github.etl.domain.{EtlSequence, Operation, OperationBody}

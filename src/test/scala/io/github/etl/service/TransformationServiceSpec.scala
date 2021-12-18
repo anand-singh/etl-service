@@ -1,6 +1,7 @@
 package io.github.etl.service
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import io.github.etl.domain.OperationBody
 import io.github.etl.exception.EtlException
 import io.github.etl.util.{CommonUtility, TestHelper}

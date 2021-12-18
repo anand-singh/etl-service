@@ -1,18 +1,18 @@
 package io.github.etl
 
-import cats.effect.{ConcurrentEffect, ContextShift, Timer}
+import cats.effect._
 import cats.implicits._
 import fs2.Stream
 import io.github.etl.service.{AggregationService, SequenceService, TransformationService}
 import org.http4s.implicits._
-import org.http4s.server.blaze.BlazeServerBuilder
+import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.server.middleware.Logger
 
 import scala.concurrent.ExecutionContext.global
 
 object Server {
 
-  def stream[F[_] : ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
+  def stream[F[_] : Async]: Stream[F, Nothing] = {
 
     val aggregationServiceAlg = AggregationService.impl[F]
     val transformationServiceAlg = TransformationService.impl[F]
@@ -34,7 +34,7 @@ object Server {
     val finalHttpApp = Logger.httpApp(logHeaders = true, logBody = true)(httpApp)
 
     val port = 8080
-    BlazeServerBuilder[F](global)
+    BlazeServerBuilder[F].withExecutionContext(global)
       .bindHttp(port, "0.0.0.0")
       .withHttpApp(finalHttpApp)
       .serve

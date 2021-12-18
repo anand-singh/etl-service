@@ -34,7 +34,7 @@ class TransformationRouteSpec extends Specification with TestHelper {
   private[this] val transformationServiceAlg = TransformationService.impl[IO]
 
   private[this] val capsOperationSuccessResponse: IO[Response[IO]] = {
-    val capsRequest = Request[IO](Method.GET, Uri.uri("etl/transform/caps"))
+    val capsRequest = Request[IO](Method.GET, uri"etl/transform/caps")
     Routes.capsTransformationRoutes(transformationServiceAlg).orNotFound(capsRequest)
   }
 
@@ -42,7 +42,7 @@ class TransformationRouteSpec extends Specification with TestHelper {
     check(capsOperationSuccessResponse, Status.Ok, Some("SUCCESS")) must beTrue
 
   private[this] val capsOperationErrorResponse: IO[Response[IO]] = {
-    val capsNotFoundRequest = Request[IO](Method.GET, Uri.uri("etl/transform/caps-xyz"))
+    val capsNotFoundRequest = Request[IO](Method.GET, uri"etl/transform/caps-xyz")
     Routes.capsTransformationRoutes(transformationServiceAlg).orNotFound(capsNotFoundRequest)
   }
 
@@ -51,7 +51,7 @@ class TransformationRouteSpec extends Specification with TestHelper {
 
   private[this] val replaceSuccessResponse: IO[Response[IO]] = {
     val body = Json.obj(("from", Json.fromString("this")), ("to", Json.fromString("test")))
-    val replaceRequest = Request[IO](Method.POST, Uri.uri("etl/transform/replace")).withEntity(body)
+    val replaceRequest = Request[IO](Method.POST, uri"etl/transform/replace").withEntity(body)
     Routes.replaceTransformationRoutes(transformationServiceAlg).orNotFound(replaceRequest)
   }
 
@@ -60,7 +60,7 @@ class TransformationRouteSpec extends Specification with TestHelper {
 
   private[this] val replaceBadRequestResponse: IO[Response[IO]] = {
     val body = Json.obj(("from", Json.fromString("this")))
-    val replaceBadReqRequest = Request[IO](Method.POST, Uri.uri("etl/transform/replace")).withEntity(body)
+    val replaceBadReqRequest = Request[IO](Method.POST, uri"etl/transform/replace").withEntity(body)
     Routes.replaceTransformationRoutes(transformationServiceAlg).orNotFound(replaceBadReqRequest)
   }
 
@@ -68,7 +68,7 @@ class TransformationRouteSpec extends Specification with TestHelper {
     check(replaceBadRequestResponse, Status.BadRequest, Some("Malformed Json error!")) must beTrue
 
   private[this] val replaceErrorResponse: IO[Response[IO]] = {
-    val replaceNotFoundRequest = Request[IO](Method.POST, Uri.uri("etl/transform/replace-xyz"))
+    val replaceNotFoundRequest = Request[IO](Method.POST, uri"etl/transform/replace-xyz")
     Routes.replaceTransformationRoutes(transformationServiceAlg).orNotFound(replaceNotFoundRequest)
   }
 
