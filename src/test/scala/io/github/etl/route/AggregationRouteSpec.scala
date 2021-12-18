@@ -29,7 +29,7 @@ class AggregationRouteSpec extends Specification with TestHelper {
   private[this] val aggregationServiceAlg = AggregationService.impl[IO]
 
   private[this] val wordCountSuccessResponse: IO[Response[IO]] = {
-    val getWordCount = Request[IO](Method.GET, Uri.uri("etl/aggregate/wordcount"))
+    val getWordCount = Request[IO](Method.GET, uri"etl/aggregate/wordcount")
     Routes.aggregationRoutes(aggregationServiceAlg).orNotFound(getWordCount)
   }
 
@@ -37,7 +37,7 @@ class AggregationRouteSpec extends Specification with TestHelper {
     check(wordCountSuccessResponse, Status.Ok, Some("SUCCESS")) must beTrue
 
   private[this] val wordCountErrorResponse: IO[Response[IO]] = {
-    val getWordFrequency = Request[IO](Method.GET, Uri.uri("etl/aggregate/wordcount-xyz"))
+    val getWordFrequency = Request[IO](Method.GET, uri"etl/aggregate/wordcount-xyz")
     Routes.aggregationRoutes(aggregationServiceAlg).orNotFound(getWordFrequency)
   }
 
@@ -45,7 +45,7 @@ class AggregationRouteSpec extends Specification with TestHelper {
     check(wordCountErrorResponse, Status.NotFound, Some("Not found")) must beTrue
 
   private[this] val wordFrequencySuccessResponse: IO[Response[IO]] = {
-    val getWordFrequency = Request[IO](Method.GET, Uri.uri("etl/aggregate/wordfrequency"))
+    val getWordFrequency = Request[IO](Method.GET, uri"etl/aggregate/wordfrequency")
     Routes.aggregationRoutes(aggregationServiceAlg).orNotFound(getWordFrequency)
   }
 
@@ -53,7 +53,7 @@ class AggregationRouteSpec extends Specification with TestHelper {
     check(wordFrequencySuccessResponse, Status.Ok, Some("SUCCESS")) must beTrue
 
   private[this] val wordFrequencyErrorResponse: IO[Response[IO]] = {
-    val getWordFrequency = Request[IO](Method.GET, Uri.uri("etl/aggregate/wordfrequency-xyz"))
+    val getWordFrequency = Request[IO](Method.GET, uri"etl/aggregate/wordfrequency-xyz")
     Routes.aggregationRoutes(aggregationServiceAlg).orNotFound(getWordFrequency)
   }
 

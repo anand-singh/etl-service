@@ -37,7 +37,7 @@ class SequenceRouteSpec extends Specification with TestHelper {
     val body = Json.obj(
       ("etl", Json.fromValues(List(Json.obj(("opr", Json.fromString("caps"))))))
     )
-    val request = Request[IO](Method.POST, Uri.uri("etl/sequence")).withEntity(body)
+    val request = Request[IO](Method.POST, uri"etl/sequence").withEntity(body)
     Routes.sequenceRoutes(sequenceServiceAlg).orNotFound(request)
   }
 
@@ -54,7 +54,7 @@ class SequenceRouteSpec extends Specification with TestHelper {
         )
       )))
     )
-    val request = Request[IO](Method.POST, Uri.uri("etl/sequence")).withEntity(body)
+    val request = Request[IO](Method.POST, uri"etl/sequence").withEntity(body)
     Routes.sequenceRoutes(sequenceServiceAlg).orNotFound(request)
   }
 
@@ -65,7 +65,7 @@ class SequenceRouteSpec extends Specification with TestHelper {
     val body = Json.obj(
       ("etl", Json.fromValues(List(Json.obj(("opr", Json.fromString("replace"))))))
     )
-    val request = Request[IO](Method.POST, Uri.uri("etl/sequence")).withEntity(body)
+    val request = Request[IO](Method.POST, uri"etl/sequence").withEntity(body)
     Routes.sequenceRoutes(sequenceServiceAlg).orNotFound(request)
   }
 
@@ -76,7 +76,7 @@ class SequenceRouteSpec extends Specification with TestHelper {
     val body = Json.obj(
       ("etl", Json.fromValues(List(Json.obj(("opr", Json.fromString("wordcount"))))))
     )
-    val request = Request[IO](Method.POST, Uri.uri("etl/sequence")).withEntity(body)
+    val request = Request[IO](Method.POST, uri"etl/sequence").withEntity(body)
     Routes.sequenceRoutes(sequenceServiceAlg).orNotFound(request)
   }
 

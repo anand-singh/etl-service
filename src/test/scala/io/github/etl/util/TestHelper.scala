@@ -1,6 +1,7 @@
 package io.github.etl.util
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import org.http4s.{EntityDecoder, Response, Status}
 
 trait TestHelper {

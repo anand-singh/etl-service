@@ -1,8 +1,7 @@
 package io.github.etl
 
 import java.util.UUID
-
-import cats.effect.Sync
+import cats.effect.{Async, Sync}
 import cats.implicits._
 import io.circe.Json
 import io.circe.generic.auto._
@@ -23,7 +22,7 @@ import org.typelevel.ci.CIString
 
 object Routes extends LoggerUtility {
 
-  def aggregationRoutes[F[_] : Sync](AS: AggregationService[F]): HttpRoutes[F] = {
+  def aggregationRoutes[F[_] : Async](AS: AggregationService[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dsl._
     HttpRoutes.of[F] {
@@ -46,7 +45,7 @@ object Routes extends LoggerUtility {
     }
   }
 
-  def capsTransformationRoutes[F[_] : Sync](TS: TransformationService[F]): HttpRoutes[F] = {
+  def capsTransformationRoutes[F[_] : Async](TS: TransformationService[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dsl._
     HttpRoutes.of[F] {
@@ -61,7 +60,7 @@ object Routes extends LoggerUtility {
     }
   }
 
-  def replaceTransformationRoutes[F[_] : Sync](TS: TransformationService[F]): HttpRoutes[F] = {
+  def replaceTransformationRoutes[F[_] : Async](TS: TransformationService[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dsl._
     HttpRoutes.of[F] {
@@ -81,7 +80,7 @@ object Routes extends LoggerUtility {
     }
   }
 
-  def sequenceRoutes[F[_] : Sync](SS: SequenceService[F]): HttpRoutes[F] = {
+  def sequenceRoutes[F[_] : Async](SS: SequenceService[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dsl._
 
@@ -110,7 +109,7 @@ object Routes extends LoggerUtility {
     }
   }
 
-  def processRequest[F[_] : Sync](dsl: Http4sDsl[F], reqId: String)(f: List[String] => F[Response[F]]): F[Response[F]] = {
+  def processRequest[F[_] : Async](dsl: Http4sDsl[F], reqId: String)(f: List[String] => F[Response[F]]): F[Response[F]] = {
     import dsl._
     ResourceReader.lines match {
       case Left(th) => BadRequest(handleBadRequest(reqId, th))
@@ -128,7 +127,7 @@ object Routes extends LoggerUtility {
   }
 
   private[this] def extractRequestId(headers: Headers): String = {
-    headers.get(CIString(REQUEST_ID_TEXT)).map(_.value).getOrElse(UUID.randomUUID().toString)
+    headers.get(CIString(REQUEST_ID_TEXT)).map(_.head.value).getOrElse(UUID.randomUUID().toString)
   }
 
   private[this] def extractData(data: List[String], capsTransOpt: Option[TransformationResult]): List[String] = {
