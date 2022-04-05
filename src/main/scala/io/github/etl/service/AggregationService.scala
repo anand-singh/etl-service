@@ -1,14 +1,14 @@
 package io.github.etl.service
 
 import cats.Applicative
-import cats.implicits._
+import cats.effect.Async
 import io.circe.Encoder
+import io.github.etl.constant.CommonConstant._
 import io.github.etl.domain.{EtlRequest, EtlResult, ResponseHeader}
 import io.github.etl.util.CommonUtility._
 import io.github.etl.util.LoggerUtility
 import org.http4s.EntityEncoder
 import org.http4s.circe._
-import io.github.etl.constant.CommonConstant._
 
 /**
   * AggregationService - Supports word count & frequency operations
@@ -39,17 +39,17 @@ object AggregationService extends LoggerUtility {
       jsonEncoderOf[F, AggregationResult]
   }
 
-  def impl[F[_] : Applicative]: AggregationService[F] = new AggregationService[F] {
-    def wordCount(count: AggregationService.Count): F[AggregationService.AggregationResult] = {
+  def impl[F[_] : Async]: AggregationService[F] = new AggregationService[F] {
+    def wordCount(count: AggregationService.Count): F[AggregationService.AggregationResult] = Async[F].delay {
       info(s"Received word count request: $count")
       val countResult = (value: List[String]) => Map(COUNT_TEXT -> value.size)
-      processAggregationResult(count.requestId, count.dataSource, countResult).pure[F]
+      processAggregationResult(count.requestId, count.dataSource, countResult)
     }
 
-    def wordFrequency(frequency: AggregationService.Frequency): F[AggregationService.AggregationResult] = {
+    def wordFrequency(frequency: AggregationService.Frequency): F[AggregationService.AggregationResult] = Async[F].delay {
       info(s"Received word frequency request: $frequency")
       val frequencyResult = (value: List[String]) => value.groupBy((word: String) => word).view.mapValues(_.length).toMap
-      processAggregationResult(frequency.requestId, frequency.dataSource, frequencyResult).pure[F]
+      processAggregationResult(frequency.requestId, frequency.dataSource, frequencyResult)
     }
 
   }

@@ -1,8 +1,8 @@
 package io.github.etl.service
 
 import java.util.regex.PatternSyntaxException
-
 import cats.Applicative
+import cats.effect.Async
 import cats.implicits._
 import io.circe.Encoder
 import io.github.etl.constant.CommonConstant._
@@ -43,16 +43,16 @@ object TransformationService extends LoggerUtility {
       jsonEncoderOf[F, TransformationResult]
   }
 
-  def impl[F[_] : Applicative]: TransformationService[F] = new TransformationService[F] {
-    def caps(request: TransformationService.CapsRequest): F[TransformationService.TransformationResult] = {
+  def impl[F[_] : Async]: TransformationService[F] = new TransformationService[F] {
+    def caps(request: TransformationService.CapsRequest): F[TransformationService.TransformationResult] = Async[F].delay {
       info(s"Received caps request: $request")
       val header = buildResponseHeader(request.requestId)
-      TransformationResult(header, request.dataSource.map(_.toUpperCase)).pure[F]
+      TransformationResult(header, request.dataSource.map(_.toUpperCase))
     }
 
-    def replace(request: TransformationService.ReplaceRequest): F[TransformationService.TransformationResult] = {
+    def replace(request: TransformationService.ReplaceRequest): F[TransformationService.TransformationResult] = Async[F].delay {
       info(s"Received replace request: $request")
-      val result = doReplace(request) match {
+      doReplace(request) match {
         case Right(value) =>
           val header = buildResponseHeader(request.requestId)
           TransformationResult(header, value)
@@ -60,7 +60,6 @@ object TransformationService extends LoggerUtility {
           val exp = EtlException(CODE_4002, SYNTAX_ERROR, th)
           handleError(request.requestId, exp)
       }
-      result.pure[F]
     }
   }
 
