@@ -1,7 +1,8 @@
 val Http4sVersion = "0.23.12"
+val Http4sLibVersion = "0.23.15"
 val CirceVersion = "0.14.2"
-val Specs2Version = "4.16.0"
-val LogbackVersion = "1.2.11"
+val Specs2Version = "4.16.1"
+val LogbackVersion = "1.4.0"
 
 lazy val root = (project in file("."))
   .settings(
@@ -12,8 +13,8 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq(
       "org.http4s"      %% "http4s-blaze-server" % Http4sVersion,
       "org.http4s"      %% "http4s-blaze-client" % Http4sVersion,
-      "org.http4s"      %% "http4s-circe"        % Http4sVersion,
-      "org.http4s"      %% "http4s-dsl"          % Http4sVersion,
+      "org.http4s"      %% "http4s-circe"        % Http4sLibVersion,
+      "org.http4s"      %% "http4s-dsl"          % Http4sLibVersion,
       "io.circe"        %% "circe-generic"       % CirceVersion,
       "org.specs2"      %% "specs2-core"         % Specs2Version % "test",
       "ch.qos.logback"  %  "logback-classic"     % LogbackVersion
