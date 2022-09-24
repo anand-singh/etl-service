@@ -27,15 +27,16 @@ object ResourceReader {
 
   private def read(path: String): Either[EtlException, List[String]] = {
     try {
-      Right(using(Source.fromResource(path))(_.getLines().toList))
+      val lines = using(Source.fromResource(path))
+      Right(lines)
     } catch {
       case NonFatal(ex) => Left(EtlException(CODE_3000, RESOURCE_ERROR, ex))
     }
   }
 
-  def using[A](r: BufferedSource)(f: BufferedSource => A): A = {
+  def using(r: BufferedSource): List[String] = {
     try {
-      f(r)
+      r.getLines().toList
     } finally {
       r.close()
     }
