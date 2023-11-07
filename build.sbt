@@ -1,15 +1,15 @@
-val Http4sVersion = "0.23.12"
+val Http4sVersion = "0.23.15"
 val Http4sLibVersion = "0.23.16"
-val CirceVersion = "0.14.3"
+val CirceVersion = "0.14.6"
 val Specs2Version = "4.19.0"
-val LogbackVersion = "1.4.5"
+val LogbackVersion = "1.4.11"
 
 lazy val root = (project in file("."))
   .settings(
     organization := "io.github.anand-singh",
     name := "etl-service",
     version := "0.0.1-SNAPSHOT",
-    scalaVersion := "2.13.10",
+    scalaVersion := "2.13.12",
     libraryDependencies ++= Seq(
       "org.http4s"      %% "http4s-blaze-server" % Http4sVersion,
       "org.http4s"      %% "http4s-blaze-client" % Http4sVersion,
